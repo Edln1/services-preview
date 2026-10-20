@@ -20,5 +20,7 @@
 .first-clean-price{display:flex;align-items:center;gap:10px}.first-clean-price>s{font-size:12px;color:#939881;text-decoration-thickness:1px}
 .seasonal-label{display:block;font-size:8px;color:#85704b;letter-spacing:.04em;margin-top:4px}
 .estimate-box>.estimate-offer-note{font-size:10px;line-height:1.8;border-top:1px solid #c9d1ba;padding-top:11px;margin-top:12px;color:#526640}
+.offer-copy,.offer-price-panel{min-width:0}
 @media(max-width:900px){.halloween-offer{gap:40px}.offer-price-panel{padding:28px}.offer-price strong{font-size:90px}.offer-follow{font-size:10px}}
 @media(max-width:640px){.announcement-offer{height:36px;gap:5px;font-size:8px;padding-inline:12px}.announcement-offer a{font-size:8px;margin-left:3px}.halloween-offer{grid-template-columns:1fr;gap:30px;padding-block:48px}.offer-copy>.eyebrow{margin-bottom:20px}.offer-copy h2{font-size:52px;margin-bottom:20px}.offer-copy>p:not(.eyebrow){font-size:12px;line-height:1.85}.offer-care{font-size:10px;gap:8px 16px;margin-top:20px}.offer-price-panel{padding:26px}.offer-price strong{font-size:99px}.offer-follow{font-size:11px}.offer-price-panel .button{font-size:11px;padding:17px 20px}.first-clean-price{gap:7px}.first-clean-price>s{font-size:10px}.seasonal-label{font-size:7px}.estimate-box>.estimate-offer-note{font-size:9px}}
+@media(max-width:640px){.offer-price{gap:6px}.offer-price>span{font-size:16px}.offer-price strong{font-size:clamp(76px,25vw,99px)}.offer-price>s{font-size:18px;margin-left:3px}.offer-price-panel .button{gap:15px;white-space:normal;text-align:left}}
