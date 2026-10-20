@@ -107,18 +107,26 @@
   });
   function quoteValues() {
     const data = new FormData(form), bedrooms = Number(data.get('bedrooms')), bathrooms = Number(data.get('bathrooms')), size = Number(data.get('size'));
-    const service = data.get('service'), large = size > 2300 || bedrooms >= 5 || bathrooms >= 4;
-    const sizeExtra = Math.max(0, Math.ceil((size - 1500) / 500)) * 40;
-    const regular = Math.round(99 + 20 * bedrooms + 16 * bathrooms + sizeExtra);
-    const deep = Math.round(159 + 30 * bedrooms + 28 * bathrooms + sizeExtra);
-    return { bedrooms, bathrooms, size, city: data.get('city'), service, large, regular, deep, standalone: deep + 50 };
+    const service = data.get('service');
+    return { bedrooms, bathrooms, size, city: data.get('city'), service, ...window.StillHomePricing.calculate({ bedrooms, bathrooms, size, service }) };
   }
   function updateEstimate() {
-    const q = quoteValues(), custom = q.service === 'move' || q.large;
-    $('#estimate-label').textContent = custom ? 'A little more detail needed' : q.service === 'recurring' ? 'First deep reset' : 'Your one-time deep reset';
+    const q = quoteValues(), custom = q.custom;
+    $('#estimate-label').textContent = custom ? 'A little more detail needed' : q.promotionApplied ? 'Halloween first deep clean' : q.service === 'recurring' ? 'First deep reset' : 'Your one-time deep reset';
     $('#estimate-price').textContent = custom ? 'Custom quote' : 'CA$' + (q.service === 'recurring' ? q.deep : q.standalone);
     $('#estimate-price').style.fontSize = custom ? '26px' : '';
     $('#estimate-follow').textContent = custom ? 'Share your home details for a tailored flat quote.' : q.service === 'recurring' ? 'Then CA$' + q.regular + ' per biweekly visit' : 'Supplies included · One-time care';
+    $('#estimate-offer-note').hidden = !q.promotionApplied;
+  }
+  function refreshSeasonalOffer() {
+    const pricing = window.StillHomePricing;
+    const active = pricing.isOfferActive();
+    $$('[data-halloween-offer]').forEach(element => { element.hidden = !active; });
+    $$('[data-standard-announcement]').forEach(element => { element.hidden = active; });
+    $$('[data-first-clean-price]').forEach(element => { element.textContent = active ? 'CA$319' : 'CA$369'; });
+    updateEstimate();
+    const boundary = Date.now() < pricing.offer.startsAt ? pricing.offer.startsAt : active ? pricing.offer.endsAt : null;
+    if (boundary !== null && boundary - Date.now() < 2147483000) setTimeout(refreshSeasonalOffer, Math.max(1, boundary - Date.now() + 50));
   }
   form.addEventListener('change', updateEstimate);
   function openQuote(service, city) {
@@ -133,10 +141,11 @@
   let estimateText = '';
   form.addEventListener('submit', event => {
     event.preventDefault();
-    const q = quoteValues(), custom = q.service === 'move' || q.large;
+    const q = quoteValues(), custom = q.custom;
     const service = q.service === 'recurring' ? 'Deep reset + biweekly care' : q.service === 'deep' ? 'One-time deep reset' : 'Move-in / move-out clean';
     const sizeLabel = $('#size').selectedOptions[0].textContent;
-    estimateText = 'STILL HOME — MY CLEANING ESTIMATE\n\n' + service + '\n' + q.bedrooms + ' bedroom' + (q.bedrooms === 1 ? '' : 's') + ' · ' + q.bathrooms + ' bathroom' + (q.bathrooms === 1 ? '' : 's') + '\n' + sizeLabel + ' · ' + q.city + '\n\n' + (custom ? 'Please provide a tailored flat quote.' : q.service === 'recurring' ? 'First deep reset: CA$' + q.deep + '\nBiweekly care: CA$' + q.regular + ' per visit' : 'One-time deep reset: CA$' + q.standalone) + '\nSupplies included.\n\nIndicative only. Final scope, price, applicable taxes and cleaner availability to be confirmed.\n\nHi! Could we confirm the details and check available dates?';
+    const offerNote = q.promotionApplied ? '\nHALLOWEEN OFFER — CA$50 off the usual CA$' + q.normalDeep + ' first deep clean.\nFree redo if anything on the agreed checklist is missed.\nOffer through ' + window.StillHomePricing.offer.deadlineLabel + '.' : '';
+    estimateText = 'STILL HOME — MY CLEANING ESTIMATE\n\n' + service + '\n' + q.bedrooms + ' bedroom' + (q.bedrooms === 1 ? '' : 's') + ' · ' + q.bathrooms + ' bathroom' + (q.bathrooms === 1 ? '' : 's') + '\n' + sizeLabel + ' · ' + q.city + '\n\n' + (custom ? 'Please provide a tailored flat quote.' : q.service === 'recurring' ? 'First deep reset: CA$' + q.deep + '\nBiweekly care: CA$' + q.regular + ' per visit' : 'One-time deep reset: CA$' + q.standalone) + '\nSupplies included.' + offerNote + '\n\nIndicative only. Final scope, price, applicable taxes and cleaner availability to be confirmed.\n\nHi! Could we confirm the details and check available dates?';
     $('#estimate-summary').textContent = estimateText; form.hidden = true; $('.quote-intro').hidden = true; $('#quote-result').hidden = false;
     $('#copy-status').textContent = 'Your estimate stays on this device. No booking has been submitted.';
     quoteDialog.scrollTop = 0; $('#copy-estimate').focus({ preventScroll: true });
@@ -152,5 +161,5 @@
     $('#copy-status').textContent = 'Your estimate file is ready. Share it in our chat to check dates.';
   });
   $('#year').textContent = '2026';
-  updateEstimate();
+  refreshSeasonalOffer();
 })();
